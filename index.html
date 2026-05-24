@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тактична система ЗСУ</title>
+
+<style>
+  body {
+   margin: 0;
+
+  font-family: "Courier New", monospace;
+
+  background:
+    radial-gradient(circle at center, rgba(77,166,255,0.12), transparent 40%),
+    radial-gradient(circle at top left, rgba(255,213,74,0.08), transparent 30%),
+    linear-gradient(180deg, #0b1110 0%, #0f1410 50%, #090d0c 100%);
+
+  min-height: 100vh;
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: flex-start;
+
+  overflow-x: hidden;
+
+  overflow-y: auto;
+
+  position: relative;
+
+  padding: 12px;
+
+  box-sizing: border-box;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      repeating-linear-gradient(0deg,
+        rgba(77,166,255,0.05) 0px,
+        rgba(77,166,255,0.05) 1px,
+        transparent 1px,
+        transparent 26px),
+      repeating-linear-gradient(90deg,
+        rgba(77,166,255,0.04) 0px,
+        rgba(77,166,255,0.04) 1px,
+        transparent 1px,
+        transparent 26px),
+      repeating-linear-gradient(180deg,
+        rgba(112,255,153,0.03) 0px,
+        rgba(112,255,153,0.03) 2px,
+        transparent 2px,
+        transparent 7px);
+    opacity: 0.55;
+    animation: flicker 6s infinite steps(2);
+  }
+
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      url("https://upload.wikimedia.org/wikipedia/commons/6/62/Laurel_wreath_gold_left.svg") left center / 140px no-repeat,
+      url("https://upload.wikimedia.org/wikipedia/commons/0/0d/Laurel_wreath_gold_right.svg") right center / 140px no-repeat;
+    opacity: 0.9;
+  }
+
+  .hud {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .hud::before {
+    content: "";
+    position: absolute;
+    inset: 18px;
+    background:
+      linear-gradient(#4da6ff,#4da6ff) top left / 90px 2px no-repeat,
+      linear-gradient(#4da6ff,#4da6ff) top left / 2px 90px no-repeat,
+      linear-gradient(#4da6ff,#4da6ff) top right / 90px 2px no-repeat,
+      linear-gradient(#4da6ff,#4da6ff) top right / 2px 90px no-repeat,
+      linear-gradient(#4da6ff,#4da6ff) bottom left / 90px 2px no-repeat,
+      linear-gradient(#4da6ff,#4da6ff) bottom left / 2px 90px no-repeat,
+      linear-gradient(#4da6ff,#4da6ff) bottom right / 90px 2px no-repeat,
+      linear-gradient(#4da6ff,#4da6ff) bottom right / 2px 90px no-repeat;
+    opacity: 0.45;
+  }
+
+  .scanline {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -20%;
+    height: 20%;
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      rgba(112,255,153,0.12),
+      transparent
+    );
+    animation: scan 6s linear infinite;
+  }
+
+  .panel {
+     position: relative;
+  z-index: 1;
+
+  background: rgba(20, 28, 20, 0.96);
+
+  border: 4px solid #2f3a1f;
+
+  padding: 18px;
+
+  width: min(440px, 92vw);
+
+  max-width: 92vw;
+
+  max-height: 88vh;
+
+  overflow-y: auto;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  box-sizing: border-box;
+  }
+
+ #mainPanel::before {
+  content: none;
+}
+
+  #mainPanel::before {
+  content: none;
+  }
+
+  #mainPanel > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  button, a {
+    background: #556b2f;
+    color: #f1f5d8;
+    border: 2px solid #2f3a1f;
+    padding: 12px;
+    text-align: center;
+    text-decoration: none;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: 0.15s;
+  }
+
+  button:hover, a:hover {
+    background: #6f7f3d;
+    transform: scale(1.03);
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  .section-title {
+    margin-top: 10px;
+    margin-bottom: 5px;
+    color: #4da6ff;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+
+  .emblem {
+    width: 100%;
+    max-width: 320px;
+    margin: 18px auto 0;
+    display: block;
+    opacity: 0.98;
+    border-radius: 10px;
+  }
+
+  @keyframes scan {
+    0% { transform: translateY(-120%); }
+    100% { transform: translateY(600%); }
+  }
+
+  @keyframes flicker {
+    0%,100% { opacity: 0.5; }
+    50% { opacity: 0.8; }
+  }
+
+
+@media (max-width: 768px) {
+  body {
+    align-items: flex-start;
+    padding: 10px;
+    overflow-y: auto;
+  }
+
+  .panel {
+    width: 100%;
+    max-width: 100%;
+    max-height: calc(100vh - 100px);
+    padding: 22px;
+    border-width: 3px;
+    gap: 12px;
+    margin-top: 10px;
+    margin-bottom: 90px;
+  }
+
+  button,
+  a {
+    width: 100%;
+    font-size: 16px;
+    padding: 16px 12px;
+    line-height: 1.35;
+    box-sizing: border-box;
+    word-break: break-word;
+  }
+
+  .section-title {
+    font-size: 13px;
+    line-height: 1.3;
+  }
+
+  .emblem {
+    max-width: 280px;
+    margin-top: 16px;
+  }
+
+  .hud::before {
+    inset: 8px;
+    background-size:
+      60px 2px,
+      2px 60px,
+      60px 2px,
+      2px 60px,
+      60px 2px,
+      2px 60px,
+      60px 2px,
+      2px 60px;
+    opacity: 0.3;
+  }
+
+  body::after {
+    background-size: 70px;
+    opacity: 0.45;
+  }
+
+  .scanline {
+    opacity: 0.25;
+  }
+}
+
+</style>
+</head>
+
+<body>
+  <div class="hud">
+    <div class="scanline"></div>
+  </div>
+
+
+  <div class="panel" id="mainPanel">
+    <button onclick="openPanel('p1')">начальники управлінь (відділів) підготовки</button>
+    <button onclick="openPanel('p2')">17 армійський корпус</button>
+    <button onclick="openPanel('p3')">19 армійський корпус</button>
+    <button onclick="openPanel('p4')">20 армійський корпус</button>
+    <button onclick="openPanel('p5')">30 КМП</button>
+    <button onclick="openPanel('p6')">ОТУ "Одеса"</button>
+
+    <img src="gerb.png" class="emblem" alt="Герб">
+  </div>
+
+
+  <div class="panel hidden" id="p1">
+    <a href="https://wa.me/380636495230">Начальник відділу підготовки 17 армійського корпусу полковник ГАНЧАРЮК Олег Вікторович</a>
+    <a href="https://wa.me/380969337280">Начальник відділу підготовки 19 армійського корпусу полковник МАДЯР Юрій Федорович</a>
+    <a href="https://wa.me/380934901222">Начальник відділу підготовки 20 армійського корпусу підполковник НАГУЛЯК Богдан Михайлович</a>
+    <a href="https://wa.me/380680479650">ТВО начальника управління підготовки 30 корпусу морської піхоти полковник ТОНЕНЧУК Олександр Сергійович</a>
+    <a href="https://wa.me/380985416281">Начальник відділу підготовки та відновлення боєздатності ОТУ "Одеса" полковник ЛОСЄВ Володимир Васильович</a>
+    <button onclick="back()">⬅ Назад</button>
+  </div>
+
+  <div class="panel hidden" id="p2">
+    <div class="section-title">Частини безпосереднього підпорядкування</div>
+    <a href="https://wa.me/380984855967">ТВО начальника відділення підготовки 118 омбр капітан ПОЛЯНСЬКИЙ Руслан Володимирович</a>
+    <a href="https://wa.me/380997834830">Начальник відділення підготовки 151 омбр підполковник ЯПРИНЦЕВ Володимир Андрійович</a>
+    <a href="https://wa.me/380634950925">Начальник відділення підготовки 128 огшбр підполковник АНОХІН Олександр Валерійович</a>
+    <a href="https://wa.me/380673653136">Начальник відділення підготовки 128 овмбр капітан ПАСЛАВСЬКИЙ Денис Олександрович</a>
+    <a href="https://wa.me/380970734441">Начальник відділення підготовки 110 омбр підполковник СТОРОЖЕНКО Олег Володимирович</a>
+    <a href="https://wa.me/380664388982">Начальник відділення підготовки 54 оабр підполковник СТЕБЛИНА Олексій Сергійович</a>
+
+    <div class="section-title">
+  Частини оперативного підпорядкування
+</div>
+    <a href="https://wa.me/380676301395">Начальник відділення підготовки 65 омбр підполковник СТРІЛЕЦЬ Олег Миколайович</a>
+    <a href="https://wa.me/380678717647">Начальник відділення підготовки 61 омбр підполковник ДЕВОТЧЕНКО Артем Володимирович</a>
+    <a href="https://wa.me/380503210266">Начальник відділення підготовки 142 омбр підполковник ГЕТЬМАН Володимир Володимирович</a>
+    <a href="https://wa.me/380972081682">Начальник відділення підготовки 153 омбр підполковник РИБАЧОК Володимир Мефодійович</a>
+    <a href="https://wa.me/380936358996">ТВО начальника відділення підготовки 154 омбр капітан ГОНТАРЕНКО Данило Дмитрович</a>
+    <a href="https://wa.me/380685144186">Начальник відділення підготовки 44 оабр підполковник ЛУЦКІВ Володимир Романович</a>
+    <a href="https://wa.me/380676327616">Начальник відділення підготовки 241 обр ТрО підполковник ЛОФИЦЬКИЙ Євгеній Вікторович</a>
+    <a href="https://wa.me/380668079407">Начальник відділення підготовки 260 обр ТрО підполковник НЕФЕДОВ Сергій Анатолійович</a>
+    <a href="https://wa.me/380635022114">Начальник відділення підготовки 5 ошбр підполковник БЛИЗЬНЮК Олексій Андрійович</a>
+    <a href="https://wa.me/380507598297">Начальник відділення підготовки 253 ошп майор КЛИМЕНКО Олег Олексійович</a>
+    <a href="https://wa.me/380679801722">Начальник відділення підготовки 225 ошп старший лейтенант КУРНАКОВ Олександр Сергійович</a>
+    <a href="https://wa.me/380685326778">Начальник відділення підготовки 92 ошбр підполковник БРАГІН Володимир Володимирович</a>
+    <a href="https://wa.me/380972122128">Начальник відділення підготовки 1 ошп підполковник КУЛІШОВ Генадій Вікторович</a>
+    <a href="https://wa.me/380969651210">Начальник відділеня підготовки 475 ошп майор ЗУБЕНКО Олексій Олексійович</a>
+    <button onclick="back()">⬅ Назад</button>
+  </div>
+
+  <div class="panel hidden" id="p3">
+    <a href="https://wa.me/380937263270">Начальник відділення підготовки 28 омбр капітан ВЕЛИЧКО Владислав Вікторович</a>
+    <a href="https://wa.me/380665766016">Начальник відділення підготовки 100 омбр підполковник СОРОКІН Володимир Анатолійович</a>
+    <a href="https://wa.me/380961219112">Начальник відділення підготовки 117 овмбр підполковник ОХРИМЧУК Олександр Олександрович</a>
+    <a href="https://wa.me/380981044694">Начальник відділення підготовки 44 овмбр підполковник ВОЙТОВ Євген Володимирович</a>
+    <a href="https://wa.me/380678717647">Начальник відділення підготовки 61 омбр підполковник ДЕВОТЧЕНКО Артем Володимирович</a>
+    <a href="https://wa.me/380953613291">Начальник відділення підготовки 40 оабр підполковник ЧИГИРИК Ігор Олександрович</a>
+    <button onclick="back()">⬅ Назад</button>
+  </div>
+
+  <div class="panel hidden" id="p4">
+    <div class="section-title">Частини безпосереднього підпорядкування</div>
+    <a href="https://wa.me/380978276116">Начальник відділення підготовки 17 овмбр капітан Когут Максим Михайлович</a>
+    <a href="https://wa.me/380507721179">Начальник відділення підготовки 23 омбр підполковник Пашко Василь Іванович</a>
+    <a href="https://wa.me/380630135397">Начальник відділення підготовки 33 омбр майор Григор’єв Андрій Віталійович</a>
+    <a href="https://wa.me/380955049228">Начальник відділення підготовки 31 омбр підполковник Терех Андрій Вікторович</a>
+    <a href="https://wa.me/380664126705">Начальник відділення підготовки 141 омбр підполковник Кулинич Микола Миколайович</a>
+    <a href="https://wa.me/380639477478">Начальник відділення підготовки 60 оабр підполковник Васалатий Сергій Олегович</a>
+    <a href="https://wa.me/380975692299">Начальник групи підготовки 1226 обп старший лейтенант Журавльов Олексій Сергійович</a>
+    <a href="https://wa.me/380677408371">Заступник командира батальйону 533 обоо капітан Бобко Михайло Володимирович</a>
+    <a href="https://wa.me/380666789596">Начальник групи підготовки 123 обз старший лейтенант Титов Сергій Іванович</a>
+    <a href="https://wa.me/380680718122">Начальник групи підготовки 519 орвб капітан Баранюк Олег Миколайович</a>
+    <a href="https://wa.me/380756934776">Заступник командира батальйону 98 оптб підполковник Голубицький Юрій Германович</a>
+    <a href="https://wa.me/380685583123">ТВО заступника командира батальйону 128 обмз старший сержант Оторвін Вадим Павлович</a>
+    <a href="https://wa.me/380665617788">ТВО начальника групи підготовки 23 орб старший лейтенант Зенковський Олексій Валерійович</a>
+    <a href="https://wa.me/380689814347">Начальник групи підготовки 423 оббс лейтенант Товстопят Олександр Васильович</a>
+    <a href="https://wa.me/380982689335">Начальник групи підготовки 1201 озрдн старший сержант Соколов Сергій Петрович</a>
+
+    <div class="section-title">Частини оперативного підпорядкування</div>
+    <a href="https://wa.me/380973544311">Начальник групи підготовки 433 оббс старший лейтенант Дунаєв Дмитро Юрійович</a>
+    <a href="https://wa.me/380970734441">Начальник відділення підготовки 110 омбр підполковник Стороженко Олег Володимирович</a>
+    <a href="https://wa.me/380955876245">Начальник відділення підготовки 37 обрмп підполковник Кравцов Микола Володимирович</a>
+    <a href="https://wa.me/380688100633">Начальник відділення підготовки 67 омбр підполковник Колесник Ігор Ігорович</a>
+    <a href="https://wa.me/380966042261">Начальник відділення підготовки 160 омбр майор Коростель Вадим Петрович</a>
+    <button onclick="back()">⬅ Назад</button>
+  </div>
+
+  <div class="panel hidden" id="p5">
+    <a href="https://wa.me/380500000001">no name</a>
+    <a href="https://wa.me/380500000002">no name</a>
+    <a href="https://wa.me/380500000003">no name</a>
+    <a href="https://wa.me/380500000004">no name</a>
+    <a href="https://wa.me/380500000005">no name</a>
+    <a href="https://wa.me/380500000006">no name</a>
+    <button onclick="back()">⬅ Назад</button>
+  </div>
+
+  <div class="panel hidden" id="p6">
+    <a href="https://wa.me/380637314193">Начальник відділення підготовки 123 обр ТрО майор Захарчук Іван Васильович</a>
+    <a href="https://wa.me/380973026433">ТВО начальник відділення підготовки 122 обр ТрО старший лейтенант Зубач Назарій Васильович</a>
+    <a href="https://wa.me/380600000003">no name</a>
+    <a href="https://wa.me/380600000004">no name</a>
+    <a href="https://wa.me/380600000005">no name</a>
+    <a href="https://wa.me/380600000006">no name</a>
+    <button onclick="back()">⬅ Назад</button>
+  </div>
+
+  <script>
+    let currentPanel = null;
+
+    function openPanel(id) {
+      document.getElementById("mainPanel").classList.add("hidden");
+      document.getElementById(id).classList.remove("hidden");
+      currentPanel = id;
+    }
+
+    function back() {
+      document.getElementById("mainPanel").classList.remove("hidden");
+      if (currentPanel) {
+        document.getElementById(currentPanel).classList.add("hidden");
+      }
+    }
+  </script>
+</body>
+</html>
